@@ -4,7 +4,7 @@ def SFS(data,q,clasificador):
 
   Parámetros:
   - Entradas:
-    - data = data set a analizar
+    - data = data set a analizar  (Asume que la primera columna es la categoría a usar)
     - q = número de dimensiones a seleccionar
     - Clasificador = El clasificador a usar
 
