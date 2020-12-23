@@ -21,6 +21,13 @@ def SBS(data,q,clasificador, ExitosPorDimension):
         print(tamaño)
   #print(exitopordimension)
   if (q == tamaño):   # Si hemos llegado a la dimensión deseada
+    # Graficamos
+    plt.figure(figsize=(15,7))
+    plt.plot(ExitosPorDimension, linewidth=2, color = "red")
+    plt.xlabel('Número de dimensiones reducidas')
+    plt.ylabel('Calificación al clasificar')
+    plt.grid(color='gray', linestyle='-', linewidth=1)
+    plt.show()
     return (ExitosPorDimension) # Regresa la lista de éxitos por dimensión reducida
   else:
     exitos = np.zeros(data.shape[1]-1)  # Crea un contador de éxitos por cada columna
@@ -47,12 +54,5 @@ def SBS(data,q,clasificador, ExitosPorDimension):
     bestdata.insert(0,'y', y)
     SBS(bestdata,q+1,clasificador,ExitosPorDimension) # Llamada recursiva
 
-    # Graficamos
-    plt.figure(figsize=(15,7))
-    plt.plot(ExitosPorDimension, linewidth=2, color = "red")
-    plt.xlabel('Número de dimensiones reducidas')
-    plt.ylabel('Calificación al clasificar')
-    plt.grid(color='gray', linestyle='-', linewidth=1)
-    plt.show()
 
     return ExitosPorDimension, peores

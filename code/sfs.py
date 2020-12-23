@@ -1,4 +1,4 @@
-def SFS(data,q,clasificador,ExitosPorDimension):
+def SFS(data,q,clasificador,ExitosPorDimension=[]):
   """
   Esta función aplica el algoritmo de Sequencial Forward Selection con un clasificador dado
 
@@ -21,6 +21,13 @@ def SFS(data,q,clasificador,ExitosPorDimension):
         bestdata = pd.DataFrame(data.y)
         mejores = []
   if (q == 0):   # Si hemos llegado a la dimensión deseada
+    # Grafica de resultados
+    plt.figure(figsize=(15,7))
+    plt.plot(ExitosPorDimension, linewidth=2, color = "red")
+    plt.xlabel('Número de dimensiones reducidas')
+    plt.ylabel('Calificación al clasificar')
+    plt.grid(color='gray', linestyle='-', linewidth=1)
+    plt.show()
     return (ExitosPorDimension) # Regresa la lista de éxitos por dimensión reducida
   else:
     exitos = np.zeros(data.shape[1]-1)  # Crea un contador de éxitos por cada columna
@@ -49,11 +56,4 @@ def SFS(data,q,clasificador,ExitosPorDimension):
     # Quitamos la caracteristica ya considerada
     data.drop(X.columns[mejor_caracteristica], inplace = True, axis=1)
     SFS(data,q-1, clasificador, ExitosPorDimension) # Llamada recursiva
-    # Grafica de resultados
-    plt.figure(figsize=(15,7))
-    plt.plot(ExitosPorDimension, linewidth=2, color = "red")
-    plt.xlabel('Número de dimensiones reducidas')
-    plt.ylabel('Calificación al clasificar')
-    plt.grid(color='gray', linestyle='-', linewidth=1)
-    plt.show()
     return ExitosPorDimension
