@@ -28,7 +28,7 @@ def SFS(data,q,clasificador,ExitosPorDimension=[]):
     plt.ylabel('Calificación al clasificar')
     plt.grid(color='gray', linestyle='-', linewidth=1)
     plt.show()
-    return (ExitosPorDimension) # Regresa la lista de éxitos por dimensión reducida
+    return ExitosPorDimension, mejores # Regresa la lista de éxitos por dimensión reducida
   else:
     exitos = np.zeros(data.shape[1]-1)  # Crea un contador de éxitos por cada columna
     X = data.iloc[:,1:]
@@ -56,4 +56,4 @@ def SFS(data,q,clasificador,ExitosPorDimension=[]):
     # Quitamos la caracteristica ya considerada
     data.drop(X.columns[mejor_caracteristica], inplace = True, axis=1)
     SFS(data,q-1, clasificador, ExitosPorDimension) # Llamada recursiva
-    return ExitosPorDimension
+    return ExitosPorDimension, mejores

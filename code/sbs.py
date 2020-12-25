@@ -28,7 +28,7 @@ def SBS(data,q,clasificador, ExitosPorDimension):
     plt.ylabel('Calificación al clasificar')
     plt.grid(color='gray', linestyle='-', linewidth=1)
     plt.show()
-    return (ExitosPorDimension) # Regresa la lista de éxitos por dimensión reducida
+    return ExitosPorDimension, peores # Regresa la lista de éxitos por dimensión reducida
   else:
     exitos = np.zeros(data.shape[1]-1)  # Crea un contador de éxitos por cada columna
     X = data.iloc[:,1:]
