@@ -1,16 +1,18 @@
+import sys
 import pandas as pd 
 import numpy as np 
 import matplotlib.pyplot as plt 
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
 plt.style.use("seaborn")
+from sklearn.model_selection import train_test_split
 
 def gen_data_cdmx():
-    url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVID19CDMX/train.csv"
-    df = pd.read_csv(url);
+    # url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVID19CDMX/train.csv"
+    # df = pd.read_csv(url)
+    url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVID19CDMX/datos.csv"
+    df = pd.read_csv(url, sep=";")
 
     columns = ['tipacien', 'fechreg', 'sexo', 'fecdef', 'intubado', 'digcline', 'edad', 'estaemba', 'fiebre', 'tos', 'odinogia', 'disnea', 'irritabi', 'diarrea', 
-            'dotoraci','calofrios', 'cefalea','mialgias', 'artral', 'ataedoge', 'rinorrea', 'polipnea', 'vomito','dolabdo', 'conjun', 	'cianosis',
+            'dotoraci','calofrios', 'cefalea','mialgias', 'artral', 'ataedoge', 'rinorrea', 'polipnea', 'vomito','dolabdo', 'conjun', 'cianosis',
             'inisubis','diabetes', 'epoc', 'asma', 'inmusupr', 'hiperten', 'vihsida', 'otracon', 'enfcardi', 'obesidad', 'insrencr',
             'tabaquis', 'resdefin']
 
@@ -22,17 +24,21 @@ def gen_data_cdmx():
     dfmini["estaemba"].fillna("NO", inplace=True)
     dfmini["digcline"].fillna("NO", inplace=True)
     dfmini["fecdef"] = dfmini["fecdef"].map(lambda x: "SI" if x != "NO" else x)
+    dfmini["edad"]= (dfmini["edad"]-dfmini["edad"].mean())/dfmini["edad"].std()
 
     cat = {}
     for col in dfmini:
-        if col in ["fechreg", "edad"]: continue 
+        if col in ["fechreg", "resdefin", "edad"]: continue 
         lookup = {x:i for i,x in enumerate(dfmini[col].unique())}
         cat[col] = lookup
         dfmini[col] = dfmini[col].map(lookup)
 
-    dfmini['edad']= (dfmini['edad']-dfmini['edad'].mean())/dfmini['edad'].std()
+    map_resdefin = {"NEGATIVO":0, "SARS-CoV-2":1}
+    cat["resdefin"] = map_resdefin
+    dfmini["resdefin"] = dfmini["resdefin"].map(map_resdefin)
 
-    col_com  = ['fecdef', 'sexo', 'tipacien', 'edad', 'diabetes', 'epoc', 'asma', 'inmusupr', 'hiperten', 'vihsida', 'otracon', 'enfcardi', 'obesidad', 'insrencr',
+
+    col_com = ['fecdef', 'sexo', 'tipacien', 'edad', 'diabetes', 'epoc', 'asma', 'inmusupr', 'hiperten', 'vihsida', 'otracon', 'enfcardi', 'obesidad', 'insrencr',
             'tabaquis', 'resdefin']
 
     col_sin = ['resdefin', 'sexo', 'tipacien', 'intubado', 'digcline', 'edad', 'estaemba', 'fiebre', 'tos', 'odinogia', 'disnea', 'irritabi', 'diarrea', 
@@ -41,6 +47,7 @@ def gen_data_cdmx():
 
     df_com = dfmini.loc[:,col_com]
     df_com = df_com[df_com['resdefin']==1]
+
     df_sin = dfmini.loc[:,col_sin]
 
     df_hosp = dfmini.copy()
@@ -50,10 +57,51 @@ def gen_data_cdmx():
     df_hosp.loc[df_hosp.intubado==1, 'tipacien'] = 1
     df_hosp.drop('intubado', axis=1, inplace=True)
     
+    df_com.name = "com"
+    df_sin.name = "sin"
+    df_hosp.name = "hosp"
     return df_com, df_sin, df_hosp
 
 def gen_data_mx():
-    return df_com, df_hosp
+    # url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVIDMX/train.csv"
+    # df = pd.read_csv(url)
+    url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVIDMX/datos.csv"
+    df = pd.read_csv(url, encoding="latin")
+    
+    col_com  = ['FECHA_SINTOMAS', 'SEXO', 'TIPO_PACIENTE', 'FECHA_DEF','INTUBADO',  'NEUMONIA', 'EDAD', 'EMBARAZO', 'DIABETES',	'EPOC', 'ASMA',	'INMUSUPR', 
+           'HIPERTENSION', 'OTRA_COM', 'CARDIOVASCULAR', 'OBESIDAD', 'RENAL_CRONICA','TABAQUISMO', 'CLASIFICACION_FINAL', 'UCI']
+    df_mx =  df.loc[:,col_com].copy()
+
+    map_yes_no = {1.0:1, 2.0:0, 97.0:0, 98.0:0, 99.0:0}
+    map_clf_final = {1.0:1, 2.0:1, 3.0:1, 4.0:0, 5.0:0, 6.0:0, 7.0:0}
+    
+    df_mx["CLASIFICACION_FINAL"] = df_mx["CLASIFICACION_FINAL"].map(map_clf_final)
+    df_mx["SEXO"] = df_mx["SEXO"]-1
+    df_mx["TIPO_PACIENTE"] = df_mx["TIPO_PACIENTE"]-1
+    df_mx["FECHA_DEF"] = df_mx["FECHA_DEF"].map(lambda x: 0 if x == "9999-99-99" else 1)
+    df_mx["EDAD"]=(df_mx["EDAD"]-df_mx["EDAD"].mean())/df_mx["EDAD"].std()
+    
+    for col in df_mx:
+        if col not in ["FECHA_SINTOMAS", "TIPO_PACIENTE", "FECHA_DEF", "CLASIFICACION_FINAL", "EDAD", "SEXO"]:
+            df_mx[col] = df_mx[col].map(map_yes_no)
+
+    df_com = df_mx[df_mx['CLASIFICACION_FINAL']==1]
+    df_com.insert(1,'y',df_mx['FECHA_DEF'])
+    df_com = df_com.drop('CLASIFICACION_FINAL', axis=1)
+    df_com = df_com.drop('FECHA_DEF', axis=1)
+    df_com = df_com.drop('FECHA_SINTOMAS', axis=1)
+
+    df_hosp = df_mx[df_mx['CLASIFICACION_FINAL']==1]
+    df_hosp.insert(1,'y',df_mx['TIPO_PACIENTE'])
+    df_hosp = df_hosp.drop('CLASIFICACION_FINAL', axis=1)
+    df_hosp = df_hosp.drop('TIPO_PACIENTE', axis=1)
+    df_hosp = df_hosp.drop('FECHA_DEF', axis=1)
+    df_hosp = df_hosp.drop('FECHA_SINTOMAS', axis=1)
+    df_hosp = df_hosp.drop('UCI', axis=1)
+
+    df_com.name = "com"
+    df_hosp.name = "hosp"
+    return df_com, df_hosp 
 
 def get_conf(X, y, classifier):
     conf = [[0,0],[0,0]]
@@ -74,17 +122,30 @@ def get_conf(X, y, classifier):
     print("Precision: ", prec)
     print("f-measure: ", fm)
     print("Recall: ", recall)
+    print("Confussion Matrix: ")
+    for row in conf:
+        for x in row:
+            print(x, end=" ")
+        print()
     return conf 
 
-def predict(X, y, gen_clf):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+def predict(X, y, gen_clf, name):
+    orig_stdout = sys.stdout
+    f = open(name, "w")
+    sys.stdout = f
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+    print("For test: ", len(y_test[y_test==0]), len(y_test[y_test==1]))
     X_train = np.concatenate((X_train[y_train==0][:len(y_train[y_train==1])], X_train[y_train==1]))
     y_train = np.concatenate((y_train[y_train==0][:len(y_train[y_train==1])], y_train[y_train==1]))
-    
+    print("For train: ", len(y_train[y_train==0]), len(y_train[y_train==1]))
     clf = gen_clf()
-    y_pred = clf.fit(X_train, y_train)
-    
-    print(clf.score(X_test, y_test))
+    clf.fit(X_train, y_train)
     conf = get_conf(X_test, y_test, clf)
-    for row in conf:
-        print(row)
+    
+    sys.stdout = orig_stdout
+    f.close()
+
+# df_co, df_hosp = gen_data_mx()
+# df_com, df_sin, df_hosp = gen_data_cdmx()
+# print(df_sin.head())
