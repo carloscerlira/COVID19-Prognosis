@@ -1,7 +1,7 @@
 import pandas as pd 
 import numpy as np 
 import matplotlib.pyplot as plt 
-plt.style.use("seaborn")
+plt.style.use("seaborn") 
 from sklearn.neighbors import KNeighborsClassifier
 
 from gen_data import gen_data_cdmx, get_conf, predict
