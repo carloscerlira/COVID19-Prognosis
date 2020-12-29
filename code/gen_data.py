@@ -6,9 +6,10 @@ plt.style.use("seaborn")
 from sklearn.model_selection import train_test_split
 
 def gen_data_cdmx():
-    # url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVID19CDMX/train.csv"
+    #url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVID19CDMX/train.csv"
     # df = pd.read_csv(url)
-    url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVID19CDMX/datos.csv"
+    #url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVID19CDMX/datos.csv"
+    url = "C:/Users/artem/Documents/Ciencia-Datos/BD-covid/datos.csv"
     df = pd.read_csv(url, sep=";")
 
     columns = ['tipacien', 'fechreg', 'sexo', 'fecdef', 'intubado', 'digcline', 'edad', 'estaemba', 'fiebre', 'tos', 'odinogia', 'disnea', 'irritabi', 'diarrea', 
@@ -63,9 +64,10 @@ def gen_data_cdmx():
     return df_com, df_sin, df_hosp
 
 def gen_data_mx():
-    # url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVIDMX/train.csv"
+    #url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVIDMX/train.csv"
     # df = pd.read_csv(url)
-    url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVIDMX/datos.csv"
+    #url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVIDMX/datos.csv"
+    url = r"C:/Users/artem/Documents/Ciencia-Datos/BD-covid/datosmx.csv"
     df = pd.read_csv(url, encoding="latin")
     
     col_com  = ['FECHA_SINTOMAS', 'SEXO', 'TIPO_PACIENTE', 'FECHA_DEF','INTUBADO',  'NEUMONIA', 'EDAD', 'EMBARAZO', 'DIABETES',	'EPOC', 'ASMA',	'INMUSUPR', 
