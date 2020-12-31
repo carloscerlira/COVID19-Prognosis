@@ -8,8 +8,8 @@ from sklearn.model_selection import train_test_split
 def gen_data_cdmx():
     #url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVID19CDMX/train.csv"
     # df = pd.read_csv(url)
-    #url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVID19CDMX/datos.csv"
-    url = "C:/Users/artem/Documents/Ciencia-Datos/BD-covid/datos.csv"
+    url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVID19CDMX/datos.csv"
+    # url = "C:/Users/artem/Documents/Ciencia-Datos/BD-covid/datos.csv"
     df = pd.read_csv(url, sep=";")
 
     columns = ['tipacien', 'fechreg', 'sexo', 'fecdef', 'intubado', 'digcline', 'edad', 'estaemba', 'fiebre', 'tos', 'odinogia', 'disnea', 'irritabi', 'diarrea', 
@@ -64,13 +64,13 @@ def gen_data_cdmx():
     return df_com, df_sin, df_hosp
 
 def gen_data_mx():
-    #url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVIDMX/train.csv"
+    # url = "https://raw.githubusercontent.com/carloscerlira/Datasets/master/COVIDMX/train.csv"
     # df = pd.read_csv(url)
-    #url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVIDMX/datos.csv"
-    url = r"C:/Users/artem/Documents/Ciencia-Datos/BD-covid/datosmx.csv"
+    url = "C:/Users/i5 8400/Desktop/Ciencias de Datos/Datasets/COVIDMX/datos.csv"
+    # url = r"C:/Users/artem/Documents/Ciencia-Datos/BD-covid/datosmx.csv"
     df = pd.read_csv(url, encoding="latin")
     
-    col_com  = ['FECHA_SINTOMAS', 'SEXO', 'TIPO_PACIENTE', 'FECHA_DEF','INTUBADO',  'NEUMONIA', 'EDAD', 'EMBARAZO', 'DIABETES',	'EPOC', 'ASMA',	'INMUSUPR', 
+    col_com  = ['FECHA_SINTOMAS', 'SEXO', 'TIPO_PACIENTE', 'FECHA_DEF', 'INTUBADO', 'NEUMONIA', 'EDAD', 'EMBARAZO', 'DIABETES',	'EPOC', 'ASMA',	'INMUSUPR', 
            'HIPERTENSION', 'OTRA_COM', 'CARDIOVASCULAR', 'OBESIDAD', 'RENAL_CRONICA','TABAQUISMO', 'CLASIFICACION_FINAL', 'UCI']
     df_mx =  df.loc[:,col_com].copy()
 
@@ -105,7 +105,9 @@ def gen_data_mx():
     df_hosp.name = "hosp"
     return df_com, df_hosp 
 
-def get_conf(X, y, classifier):
+def get_conf(X, y, classifier): 
+    cnt_P, cnt_N = len(y[y==1]), len(y[y==0])
+    print(f"For test: {cnt_P/len(y): .3f}, {cnt_N/len(y): .3f}")
     conf = [[0,0],[0,0]]
     for clf in [0, 1]:
         for pred_clf in [0, 1]:
@@ -115,19 +117,19 @@ def get_conf(X, y, classifier):
             cnt = len(y_pred[y_pred == pred_clf])
             prob = cnt/len(y_clf)
             conf[clf][pred_clf] = prob
-    TP, FP, FN, TN = conf[0][0], conf[0][1], conf[1][0], conf[1][1]
+    TP, FP, FN, TN = conf[1][1]*cnt_P, conf[0][1]*cnt_N, conf[1][0]*cnt_P, conf[0][0]*cnt_N
     acc = (TP+TN)/(TP+TN+FP+FN)
     prec = TP/(TP+FP)
     fm = 2*TP/(2*TP+FP+FN)
     recall = TP/(TP+FN)
-    print("Accuaracy: ", acc)
-    print("Precision: ", prec)
-    print("f-measure: ", fm)
-    print("Recall: ", recall)
+    print(f"Accuaracy: {acc: .3f}")
+    print(f"Precision: {prec: .3f}")
+    print(f"f-measure: {fm: .3f}")
+    print(f"Recall: {recall: .3f}")
     print("Confussion Matrix: ")
     for row in conf:
         for x in row:
-            print(x, end=" ")
+            print(f"{x:.3f}", end=" ")
         print()
     return conf 
 
@@ -135,12 +137,11 @@ def predict(X, y, gen_clf, name):
     orig_stdout = sys.stdout
     f = open(name, "w")
     sys.stdout = f
-
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
-    print("For test: ", len(y_test[y_test==0]), len(y_test[y_test==1]))
+    # print("For test: ", len(y_test[y_test==0]), len(y_test[y_test==1]))
     X_train = np.concatenate((X_train[y_train==0][:len(y_train[y_train==1])], X_train[y_train==1]))
     y_train = np.concatenate((y_train[y_train==0][:len(y_train[y_train==1])], y_train[y_train==1]))
-    print("For train: ", len(y_train[y_train==0]), len(y_train[y_train==1]))
+    # print("For train: ", len(y_train[y_train==0]), len(y_train[y_train==1]))
     clf = gen_clf()
     clf.fit(X_train, y_train)
     conf = get_conf(X_test, y_test, clf)

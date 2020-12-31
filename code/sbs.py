@@ -1,9 +1,8 @@
-import matplotlib.pyplot as plt 
 import pandas as pd 
 import numpy as np 
 from sklearn.model_selection import train_test_split
 
-def SBS(data,q,gen_clf, name,ExitosPorDimension = None):
+def SBS(data,q,clasificador, ExitosPorDimension):
   """
   Esta función aplica el algoritmo de Sequencial Backward Selection con k-vecinos
 
