@@ -1,8 +1,0 @@
-For train:  0.342,  0.658
-Accuaracy:  0.655
-Precision:  0.496
-f-measure:  0.519
-Recall:  0.544
-Confussion Matrix: 
-0.713 0.287 
-0.456 0.544 

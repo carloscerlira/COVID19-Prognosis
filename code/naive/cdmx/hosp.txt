@@ -1,4 +1,4 @@
-For train:  0.081,  0.919
+For test:  0.081,  0.919
 Accuaracy:  0.882
 Precision:  0.392
 f-measure:  0.529

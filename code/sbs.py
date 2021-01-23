@@ -1,16 +1,31 @@
+import matplotlib.pyplot as plt 
 import pandas as pd 
 import numpy as np 
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score
 
-def SBS(data,q,clasificador, ExitosPorDimension):
+def get_prec(X, y, classifier):
+    cnt_P, cnt_N = len(y[y==1]), len(y[y==0])
+    conf = [[0,0],[0,0]]
+    for clf in [0, 1]:
+        for pred_clf in [0, 1]:
+            X_clf = X[y == clf]
+            y_clf = y[y == clf]
+            y_pred = classifier.predict(X_clf)
+            cnt = len(y_pred[y_pred == pred_clf])
+            prob = cnt/len(y_clf)
+            conf[clf][pred_clf] = prob
+    TP, FP, FN, TN = conf[1][1]*cnt_P, conf[0][1]*cnt_N, conf[1][0]*cnt_P, conf[0][0]*cnt_N
+    prec = TP/(TP+FP)
+    return prec 
+
+def SBS(data,q,gen_clf, name,ExitosPorDimension = None):
   """
   Esta función aplica el algoritmo de Sequencial Backward Selection con k-vecinos
-
   Parámetros:
   - Entradas:
     - data = data set a analizar (asume que la primera columna tiene la clasificación)
     - q = número de dimensiones a seleccionar
-
   - Salidas:
     - ExitosPorDimension: Una lista de q elementos con la cantidad máxima de éxitos al eliminar una dimensión
     - peores: Lista en orden de las peores caracteristicas
@@ -55,7 +70,10 @@ def SBS(data,q,clasificador, ExitosPorDimension):
       y_train = np.concatenate((y_train[y_train==0][:len(y_train[y_train==1])], y_train[y_train==1]))
       clf.fit(X_train,y_train)
       # Analizamos los score para cada dimension reducida
-      exitos[j] = clf.score(X_test, y_test)  # Aplica el clasificador de K vecinos cercanos
+      #exitos[j] = clf.score(X_test, y_test)  # Aplica el clasificador de K vecinos cercanos
+      exitos[j] = get_prec(X_test, y_test, clf)  # Aplica el clasificador de K vecinos cercanos
+      # exitos[j] = precision_score(y_true=y_test, y_pred=clf.predict(X_test))
+    
     # Tomamos el mayor score
     print('La mayor cantidad de éxitos es: ', max(exitos))
     ExitosPorDimension.append(max(exitos))

@@ -1,53 +1,36 @@
+  
 import matplotlib.pyplot as plt 
 import pandas as pd 
 import numpy as np 
 from sklearn.model_selection import train_test_split
 
-def get_prec(X,y,classifier):
-    """ 
-    Regresa la precisión de un clasificador classifier con X, y dados
-    """
-    conf = [[0,0],[0,0]]
-    for clf in [0, 1]:
-        for pred_clf in [0, 1]:
-            X_clf = X[y == clf]
-            y_clf = y[y == clf]
-            y_pred = classifier.predict(X_clf)
-            cnt = len(y_pred[y_pred == pred_clf])
-            prob = cnt/len(y_clf)
-            conf[clf][pred_clf] = prob
-    TP, FP, FN, TN = conf[0][0], conf[0][1], conf[1][0], conf[1][1]
-    prec = TP/(TP+FP)
-    return prec
-
-
-
-def SBS(data,q,gen_clf, name,ExitosPorDimension = None):
+def SFS(data,q,gen_clf,name,ExitosPorDimension=None):
   """
-  Esta función aplica el algoritmo de Sequencial Backward Selection con k-vecinos
+  Esta función aplica el algoritmo de Sequencial Forward Selection con un clasificador dado
   Parámetros:
   - Entradas:
-    - data = data set a analizar (asume que la primera columna tiene la clasificación)
+    - data = data set a analizar  (Asume que la primera columna es la categoría a usar)
     - q = número de dimensiones a seleccionar
+    - Clasificador = El clasificador a usar
   - Salidas:
-    - ExitosPorDimension: Una lista de q elementos con la cantidad máxima de éxitos al eliminar una dimensión
-    - peores: Lista en orden de las peores caracteristicas
+    - ExitosPorDimension: Una lista de q elementos con la cantidad máxima de éxitos al agregar una dimensión
+    - mejores: Lista en orden de las mejores caracteristicas
   """
-  # Este algoritmo recursivamente elimina la dimensión que al quitarla del análisis
+  # Este algoritmo recursivamente agrega una dimensión que al agregarla al análisis
   # hace que el número de éxitos de predicción sea máximo
   clf = gen_clf()
-  global tamaño, peores
+  global bestdata, tamaño, mejores
   if(not ExitosPorDimension):
-        ExitosPorDimension = []
         tamaño = data.shape[1]-1
-        peores = []
-  #print(exitopordimension)
-  if (q == tamaño):   # Si hemos llegado a la dimensión deseada
-    # Graficamos
+        ExitosPorDimension = []
+        bestdata = pd.DataFrame(data.iloc[:,0])
+        mejores = []
+  if (q == 0):   # Si hemos llegado a la dimensión deseada
+    # Grafica de resultados
     x = np.arange(1,tamaño,1)
     plt.figure(figsize=(15,7))
-    plt.plot(x,ExitosPorDimension, linewidth=2, color = "red")
-    plt.xlabel('Número de dimensiones reducidas')
+    plt.plot(x, ExitosPorDimension, linewidth=2, color = "red")
+    plt.xlabel('Número de dimensiones seleccionadas')
     plt.ylabel('Calificación al clasificar')
     plt.grid(color='gray', linestyle='-', linewidth=1)
     plt.savefig(name+".pdf")
@@ -56,36 +39,38 @@ def SBS(data,q,gen_clf, name,ExitosPorDimension = None):
     for exito in ExitosPorDimension:
         f.write(str(exito))
         f.write("\n")
-    for caracteristica in peores:
+    for caracteristica in mejores:
         f.write(str(caracteristica))
         f.write("\n")
     f.close()
-    return ExitosPorDimension, peores # Regresa la lista de éxitos por dimensión reducida
+    return ExitosPorDimension, mejores # Regresa la lista de éxitos por dimensión reducida
   else:
-    exitos = np.zeros(data.shape[1]-1)  # Crea un contador de éxitos por cada columna
+    #print(ExitosPorDimension)
+    exitos = np.zeros(data.shape[1])  # Crea un contador de éxitos por cada columna
     X = data.iloc[:,1:]
-    y = data.iloc[:,0]
+    #y = data.iloc[:,0]
     for j in range(X.shape[1]-1):
-      datos = X.drop(X.columns[j], inplace=False, axis=1)
-      X_train, X_test, y_train, y_test = train_test_split(datos, y, test_size=0.2, random_state=42)
+      #print(bestdata.columns)
+      datos = bestdata.copy()
+      # Agregamos las caracteristicas una a una a best data para ver cual es la siguiente mejor
+      datos.insert(datos.shape[1],X.columns[j], X.iloc[:,j])
+      X_train, X_test, y_train, y_test = train_test_split(datos.iloc[:,1:], datos.iloc[:,0], test_size=0.4, random_state=42)
       # Homogeneizamos los datos con los que hacer fit
       X_train = np.concatenate((X_train[y_train==0][:len(y_train[y_train==1])], X_train[y_train==1]))
       y_train = np.concatenate((y_train[y_train==0][:len(y_train[y_train==1])], y_train[y_train==1]))
       clf.fit(X_train,y_train)
       # Analizamos los score para cada dimension reducida
-      #exitos[j] = clf.score(X_test, y_test)  # Aplica el clasificador de K vecinos cercanos
-      exitos[j] = get_prec(X_test, y_test,clf)  # Aplica el clasificador de K vecinos cercanos
+      exitos[j] = clf.score(X_test, y_test)  # Aplica el clasificador de K vecinos cercanos
     # Tomamos el mayor score
     print('La mayor cantidad de éxitos es: ', max(exitos))
     ExitosPorDimension.append(max(exitos))
-    peor_caracteristica = np.where(exitos == max(exitos))[0][0]
-    print('La dimensión reducida es: ' , X.columns[peor_caracteristica])
-    # Guardamos las peores caracteristicas en orden
-    peores.append(X.columns[peor_caracteristica])
+    mejor_caracteristica = np.where(exitos == max(exitos))[0][0]
+    print('La caracteristica seleccionada es: ' , X.columns[mejor_caracteristica])
+    # Guardamos las mejores caracteristicas en orden
+    mejores.append(X.columns[mejor_caracteristica])
     # Seleccionamos las mejores caracteristicas
-    bestdata = X.drop(X.columns[peor_caracteristica], inplace=False, axis=1)  # Quita la columna que menos ayuda
-    bestdata.insert(0,'y', y)
-    SBS(bestdata,q+1,gen_clf,name,ExitosPorDimension) # Llamada recursiva
-
-
-    return ExitosPorDimension, peores
+    bestdata.insert(bestdata.shape[1],X.columns[mejor_caracteristica],X.iloc[:,mejor_caracteristica])  # Agrega a bestdata la mejor caracteristica
+    # Quitamos la caracteristica ya considerada
+    data.drop(X.columns[mejor_caracteristica], inplace = True, axis=1)
+    SFS(data,q-1, gen_clf,name, ExitosPorDimension) # Llamada recursiva
+    return ExitosPorDimension, mejores

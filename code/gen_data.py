@@ -39,15 +39,16 @@ def gen_data_cdmx():
     dfmini["resdefin"] = dfmini["resdefin"].map(map_resdefin)
 
 
-    col_com = ['fecdef', 'sexo', 'tipacien', 'edad', 'diabetes', 'epoc', 'asma', 'inmusupr', 'hiperten', 'vihsida', 'otracon', 'enfcardi', 'obesidad', 'insrencr',
+    col_com = ['fecdef', 'sexo', 'edad', 'diabetes', 'epoc', 'asma', 'inmusupr', 'hiperten', 'vihsida', 'otracon', 'enfcardi', 'obesidad', 'insrencr',
             'tabaquis', 'resdefin']
 
-    col_sin = ['resdefin', 'sexo', 'tipacien', 'intubado', 'digcline', 'edad', 'estaemba', 'fiebre', 'tos', 'odinogia', 'disnea', 'irritabi', 'diarrea', 
+    col_sin = ['resdefin', 'sexo', 'intubado', 'digcline', 'edad', 'estaemba', 'fiebre', 'tos', 'odinogia', 'disnea', 'irritabi', 'diarrea', 
             'dotoraci','calofrios', 'cefalea', 'mialgias', 'artral', 'ataedoge', 'rinorrea', 'polipnea', 'vomito', 'dolabdo', 'conjun', 'cianosis',
             'inisubis']
 
     df_com = dfmini.loc[:,col_com]
     df_com = df_com[df_com['resdefin']==1]
+    df_com.drop('resdefin', axis=1, inplace=True)
 
     df_sin = dfmini.loc[:,col_sin]
 
@@ -55,7 +56,7 @@ def gen_data_cdmx():
     df_hosp.drop('fechreg', axis=1, inplace=True)
     df_hosp.drop('fecdef', axis=1, inplace=True)
     df_hosp.drop('resdefin', axis=1, inplace=True)
-    df_hosp.loc[df_hosp.intubado==1, 'tipacien'] = 1
+    # df_hosp.loc[df_hosp.intubado==1, 'tipacien'] = 1
     df_hosp.drop('intubado', axis=1, inplace=True)
     
     df_com.name = "com"
@@ -92,11 +93,13 @@ def gen_data_mx():
     df_com = df_com.drop('CLASIFICACION_FINAL', axis=1)
     df_com = df_com.drop('FECHA_DEF', axis=1)
     df_com = df_com.drop('FECHA_SINTOMAS', axis=1)
+    df_com = df_com.drop('TIPO_PACIENTE', axis=1)
+
 
     df_hosp = df_mx[df_mx['CLASIFICACION_FINAL']==1]
     df_hosp.insert(1,'y',df_mx['TIPO_PACIENTE'])
-    df_hosp = df_hosp.drop('CLASIFICACION_FINAL', axis=1)
     df_hosp = df_hosp.drop('TIPO_PACIENTE', axis=1)
+    df_hosp = df_hosp.drop('CLASIFICACION_FINAL', axis=1)
     df_hosp = df_hosp.drop('FECHA_DEF', axis=1)
     df_hosp = df_hosp.drop('FECHA_SINTOMAS', axis=1)
     df_hosp = df_hosp.drop('UCI', axis=1)
